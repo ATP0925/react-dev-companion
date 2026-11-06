@@ -50,7 +50,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         {children}
-        {process.env.NODE_ENV === 'development' && <DevCompanion/>}
+        {process.env.NODE_ENV === 'development' && <DevCompanion />}
       </body>
     </html>
   );
@@ -66,8 +66,8 @@ import { DevCompanion } from 'react-dev-companion';
 export function App() {
   return (
     <div>
-      <MainContent/>
-      {import.meta.env.DEV && <DevCompanion/>}
+      <MainContent />
+      {import.meta.env.DEV && <DevCompanion />}
     </div>
   );
 }
@@ -77,7 +77,7 @@ export function App() {
 
 ## API Reference
 
-### `<DevCompanion/>`
+### `<DevCompanion />`
 
 | Prop | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
@@ -93,21 +93,34 @@ React DevCompanion hooks into the global `window.fetch` object upon mounting, wr
 
 ## Contributing
 
-Contributions are welcome. Please read our `CONTRIBUTING.md` guide before submitting a Pull Request.
+Contributions are welcome. Please read our guidelines below before submitting a Pull Request.
 
 ### Development Workflow
 
-1. Fork and clone the repository.
+1. Fork and clone the repository:
+   ```bash
+   git clone https://github.com/Kickz1nn/react-dev-companion.git
+   cd react-dev-companion
+   ```
+
 2. Install dependencies:
    ```bash
    npm install
    ```
+
 3. Run local build checks:
    ```bash
    npm run build
    ```
 
-Note: This project enforces [Conventional Commits](https://www.conventionalcommits.org/). Commits are verified locally using Husky and Commitlint prior to stage completion.
+### Commit Guidelines
+
+This project enforces [Conventional Commits](https://www.conventionalcommits.org/). Commits are verified locally using Husky and Commitlint prior to stage completion. 
+
+Example commit formats:
+- `feat: add localStorage inspection tab`
+- `fix: handle fetch network failure edge case`
+- `docs: update setup guide in README`
 
 ---
 
