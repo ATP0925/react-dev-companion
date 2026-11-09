@@ -1,12 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { initFetchInterceptor, NetworkLog } from '../core/fetchInterceptor';
 import { StorageTab } from './StorageTab';
-import { NetworkTab } from './Networktab';
+import { NetworkTab } from './NetworkTab';
+import { useKeyboardShortcut } from '../hooks/useKeyboardShortcut';
 
-export const DevCompanion: React.FC = () => {
+export interface DevCompanionProps {
+  position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
+}
+
+export const DevCompanion: React.FC<DevCompanionProps> = ({ position = 'bottom-right' }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<'network' | 'storage'>('network');
   const [logs, setLogs] = useState<NetworkLog[]>([]);
+
+  // Shortcut: Ctrl/CMD + Shift + D to toggle the Dev Companion
+  useKeyboardShortcut({ key: 'd', ctrlOrCmd: true, shift: true }, () => {
+    setIsOpen((prev) => !prev);
+  });
 
   useEffect(() => {
     initFetchInterceptor((newLog: NetworkLog) => {
@@ -14,10 +24,28 @@ export const DevCompanion: React.FC = () => {
     });
   }, []);
 
+  // Define position styles based on the provided position prop
+  const getPositionStyles = () => {
+    switch (position) {
+      case 'bottom-left':
+        return { bottom: 16, left: 16 };
+      case 'top-right':
+        return { top: 16, right: 16 };
+      case 'top-left':
+        return { top: 16, left: 16 };
+      case 'bottom-right':
+      default:
+        return { bottom: 16, right: 16 };
+    }
+  };
+
+  const posStyles = getPositionStyles();
+
   return (
-    <div style={{ position: 'fixed', bottom: 16, right: 16, zIndex: 99999, fontFamily: 'sans-serif' }}>
+    <div style={{ position: 'fixed', ...posStyles, zIndex: 99999, fontFamily: 'sans-serif' }}>
       <button
         onClick={() => setIsOpen(!isOpen)}
+        title="Atalho: Ctrl + Shift + D"
         style={{
           background: '#1e293b',
           color: '#fff',
@@ -36,8 +64,8 @@ export const DevCompanion: React.FC = () => {
         <div
           style={{
             position: 'absolute',
-            bottom: 50,
-            right: 0,
+            ...(posStyles.bottom !== undefined ? { bottom: 50 } : { top: 50 }),
+            ...(posStyles.right !== undefined ? { right: 0 } : { left: 0 }),
             width: 440,
             height: 380,
             background: '#0f172a',
@@ -49,7 +77,7 @@ export const DevCompanion: React.FC = () => {
             flexDirection: 'column',
           }}
         >
-          {/* Header de Navegação das Abas Principais */}
+          {/* Header de Navegação */}
           <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid #334155', paddingBottom: '8px', marginBottom: '8px' }}>
             <button
               onClick={() => setActiveTab('network')}
@@ -83,7 +111,7 @@ export const DevCompanion: React.FC = () => {
             </button>
           </div>
 
-          {/* Panels Content */}
+          {/* Content */}
           {activeTab === 'network' ? (
             <div style={{ flex: 1, overflowY: 'auto' }}>
               <NetworkTab logs={logs} />
