@@ -1,0 +1,14 @@
+# Development folders
+playground/
+.github/
+.vscode/
+node_modules/
+
+# Source code (only dist is published)
+src/
+
+# Config files
+tsconfig.json
+vite.config.ts
+commitlint.config.js
+.gitignore
