@@ -1,11 +1,26 @@
 import React, { useEffect, useState } from 'react';
 import { initFetchInterceptor, NetworkLog } from '../core/fetchInterceptor';
-import { StorageInspector } from './StorageInspector';
+import { StorageTab } from './StorageTab';
+import { NetworkTab } from './NetworkTab';
+import { useKeyboardShortcut } from '../hooks/useKeyboardShortcut';
+import { theme, injectDevCompanionStyles } from './styles';
 
-export const DevCompanion: React.FC = () => {
+export interface DevCompanionProps {
+  position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
+}
+
+export const DevCompanion: React.FC<DevCompanionProps> = ({ position = 'bottom-right' }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<'network' | 'storage'>('network');
   const [logs, setLogs] = useState<NetworkLog[]>([]);
+
+  useEffect(() => {
+    injectDevCompanionStyles();
+  }, []);
+
+  useKeyboardShortcut({ key: 'd', ctrlOrCmd: true, shift: true }, () => {
+    setIsOpen((prev) => !prev);
+  });
 
   useEffect(() => {
     initFetchInterceptor((newLog: NetworkLog) => {
@@ -13,108 +28,131 @@ export const DevCompanion: React.FC = () => {
     });
   }, []);
 
+  const getPositionStyles = () => {
+    switch (position) {
+      case 'bottom-left':
+        return { bottom: 16, left: 16 };
+      case 'top-right':
+        return { top: 16, right: 16 };
+      case 'top-left':
+        return { top: 16, left: 16 };
+      case 'bottom-right':
+      default:
+        return { bottom: 16, right: 16 };
+    }
+  };
+
+  const posStyles = getPositionStyles();
+
   return (
-    <div style={{ position: 'fixed', bottom: 16, right: 16, zIndex: 99999, fontFamily: 'sans-serif' }}>
+    <div style={{ position: 'fixed', ...posStyles, zIndex: 99999, fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+      {/* Floating Trigger Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
+        title="Shortcut: Ctrl + Shift + D"
         style={{
-          background: '#1e293b',
-          color: '#fff',
-          border: 'none',
-          padding: '10px 14px',
-          borderRadius: '8px',
+          background: theme.bg,
+          color: theme.textPrimary,
+          border: `1px solid ${theme.border}`,
+          padding: '8px 14px',
+          borderRadius: '20px',
           cursor: 'pointer',
-          fontWeight: 'bold',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+          fontWeight: 600,
+          fontSize: '12px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.35)',
+          transition: 'transform 0.15s ease',
         }}
       >
-        Dev Companion ({logs.length})
+        <span style={{ color: theme.accent }}>⚡</span> DevCompanion
+        {logs.length > 0 && (
+          <span
+            style={{
+              background: theme.accent,
+              color: '#fff',
+              fontSize: '10px',
+              padding: '2px 6px',
+              borderRadius: '10px',
+              fontWeight: 700,
+            }}
+          >
+            {logs.length}
+          </span>
+        )}
       </button>
 
+      {/* Overlay Panel Card */}
       {isOpen && (
         <div
+          className="dev-companion-panel-animate"
           style={{
             position: 'absolute',
-            bottom: 50,
-            right: 0,
-            width: 380,
-            height: 340,
-            background: '#0f172a',
-            color: '#f8fafc',
-            borderRadius: '8px',
+            ...(posStyles.bottom !== undefined ? { bottom: 50 } : { top: 50 }),
+            ...(posStyles.right !== undefined ? { right: 0 } : { left: 0 }),
+            width: 440,
+            height: 400,
+            background: theme.bg,
+            color: theme.textPrimary,
+            borderRadius: '10px',
             padding: '12px',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+            border: `1px solid ${theme.border}`,
+            boxShadow: '0 12px 32px rgba(0,0,0,0.5)',
             display: 'flex',
-            flexDirection: 'column'
+            flexDirection: 'column',
           }}
         >
-          {/* Main Panel Navigation Header */}
-          <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid #334155', paddingBottom: '8px', marginBottom: '8px' }}>
-            <button
-              onClick={() => setActiveTab('network')}
-              style={{
-                background: activeTab === 'network' ? '#0284c7' : '#1e293b',
-                color: '#fff',
-                border: 'none',
-                padding: '6px 12px',
-                borderRadius: '4px',
-                fontSize: '12px',
-                fontWeight: 'bold',
-                cursor: 'pointer'
-              }}
-            >
-              Network
-            </button>
-            <button
-              onClick={() => setActiveTab('storage')}
-              style={{
-                background: activeTab === 'storage' ? '#0284c7' : '#1e293b',
-                color: '#fff',
-                border: 'none',
-                padding: '6px 12px',
-                borderRadius: '4px',
-                fontSize: '12px',
-                fontWeight: 'bold',
-                cursor: 'pointer'
-              }}
-            >
-              Storage
-            </button>
+          {/* Header */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${theme.border}`, paddingBottom: '8px', marginBottom: '10px' }}>
+            <div style={{ display: 'flex', gap: '6px' }}>
+              <button
+                onClick={() => setActiveTab('network')}
+                style={{
+                  background: activeTab === 'network' ? theme.accent : 'transparent',
+                  color: activeTab === 'network' ? '#fff' : theme.textSecondary,
+                  border: 'none',
+                  padding: '5px 12px',
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                Network
+              </button>
+              <button
+                onClick={() => setActiveTab('storage')}
+                style={{
+                  background: activeTab === 'storage' ? theme.accent : 'transparent',
+                  color: activeTab === 'storage' ? '#fff' : theme.textSecondary,
+                  border: 'none',
+                  padding: '5px 12px',
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                Storage
+              </button>
+            </div>
+
+            <span style={{ fontSize: '10px', color: theme.textSecondary, fontFamily: 'monospace' }}>
+              Ctrl+Shift+D
+            </span>
           </div>
 
-          {/* Panel Content */}
-          {activeTab === 'network' ? (
-            <div style={{ flex: 1, overflowY: 'auto' }}>
-              {logs.length === 0 ? (
-                <p style={{ color: '#94a3b8', fontSize: '13px' }}>No requests captured yet.</p>
-              ) : (
-                logs.map((log: NetworkLog) => (
-                  <div
-                    key={log.id}
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      padding: '6px 0',
-                      borderBottom: '1px solid #1e293b',
-                      fontSize: '12px'
-                    }}
-                  >
-                    <span style={{ fontWeight: 'bold', color: log.method === 'GET' ? '#38bdf8' : '#4ade80' }}>
-                      [{log.method}]
-                    </span>
-                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '180px' }}>
-                      {log.url}
-                    </span>
-                    <span style={{ color: log.status && log.status >= 400 ? '#f87171' : '#facc15' }}>
-                      {log.status || 'PENDING'}
-                    </span>
-                  </div>
-                ))
-              )}
-            </div>
-          ) : (
-            <StorageInspector />
-          )}
+          {/* Content */}
+          <div style={{ flex: 1, overflow: 'hidden' }}>
+            {activeTab === 'network' ? (
+              <NetworkTab logs={logs} onClear={() => setLogs([])} />
+            ) : (
+              <StorageTab />
+            )}
+          </div>
         </div>
       )}
     </div>

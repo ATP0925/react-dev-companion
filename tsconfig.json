@@ -13,7 +13,8 @@
     "jsx": "react-jsx",
     "strict": true,
     "declaration": true,
-    "types": ["node"]
+    "types": ["node"],
+    "forceConsistentCasingInFileNames": true
   },
   "include": ["src/**/*", "vite.config.ts"]
 }
