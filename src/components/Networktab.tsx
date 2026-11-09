@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { NetworkLog } from '../core/fetchInterceptor';
+import { NetworkLog, networkConfig } from '../core/fetchInterceptor';
 
 interface NetworkTabProps {
   logs: NetworkLog[];
@@ -8,8 +8,20 @@ interface NetworkTabProps {
 export const NetworkTab = ({ logs }: NetworkTabProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedMethod, setSelectedMethod] = useState<string>('ALL');
+  const [isOffline, setIsOffline] = useState(networkConfig.isOffline);
+  const [delay, setDelay] = useState(networkConfig.delayMs);
 
-  // Filtra os logs por URL e por Método HTTP
+  const handleToggleOffline = () => {
+    const nextState = !isOffline;
+    setIsOffline(nextState);
+    networkConfig.isOffline = nextState;
+  };
+
+  const handleDelayChange = (newDelay: number) => {
+    setDelay(newDelay);
+    networkConfig.delayMs = newDelay;
+  };
+
   const filteredLogs = logs.filter((log) => {
     const matchesSearch = log.url.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesMethod = selectedMethod === 'ALL' || log.method === selectedMethod;
@@ -23,6 +35,37 @@ export const NetworkTab = ({ logs }: NetworkTabProps) => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', height: '100%' }}>
+      {/* Controles de Simulação (Offline / Throttling) */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          background: '#1e293b',
+          padding: '6px 8px',
+          borderRadius: '4px',
+          fontSize: '11px',
+        }}
+      >
+        <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', color: isOffline ? '#f87171' : '#cbd5e1' }}>
+          <input type="checkbox" checked={isOffline} onChange={handleToggleOffline} />
+          Simular Offline
+        </label>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{ color: '#cbd5e1' }}>Delay:</span>
+          <select
+            value={delay}
+            onChange={(e) => handleDelayChange(Number(e.target.value))}
+            style={{ background: '#0f172a', color: '#fff', border: '1px solid #334155', borderRadius: '3px', padding: '2px 4px', fontSize: '11px' }}
+          >
+            <option value={0}>Nenhum (0ms)</option>
+            <option value={500}>Fast 3G (500ms)</option>
+            <option value={2000}>Slow 3G (2000ms)</option>
+          </select>
+        </div>
+      </div>
+
       {/* Barra de Filtros */}
       <div style={{ display: 'flex', gap: '8px' }}>
         <input
@@ -91,7 +134,7 @@ export const NetworkTab = ({ logs }: NetworkTabProps) => {
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap',
-                      maxWidth: '180px',
+                      maxWidth: '160px',
                       color: '#e2e8f0',
                     }}
                   >

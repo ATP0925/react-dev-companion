@@ -11,6 +11,12 @@ type LogCallback = (log: NetworkLog) => void;
 
 let isInitialized = false;
 
+// Flags of Network Settings
+export const networkConfig = {
+  isOffline: false,
+  delayMs: 0,
+};
+
 export const initFetchInterceptor = (onLog: LogCallback) => {
   if (isInitialized || typeof window === 'undefined') return;
   isInitialized = true;
@@ -20,7 +26,7 @@ export const initFetchInterceptor = (onLog: LogCallback) => {
   window.fetch = async (...args) => {
     const startTime = performance.now();
     const id = Math.random().toString(36).substring(2, 9);
-    
+
     let url = '';
     let method = 'GET';
 
@@ -37,10 +43,30 @@ export const initFetchInterceptor = (onLog: LogCallback) => {
       method = args[1].method.toUpperCase();
     }
 
+    // 1. Simulation of Network Delay (waits before firing the fetch)
+    if (networkConfig.delayMs > 0) {
+      await new Promise((resolve) => setTimeout(resolve, networkConfig.delayMs));
+    }
+
+    // 2. Simulation of Offline Mode (blocks the fetch before firing)
+    if (networkConfig.isOffline) {
+      const endTime = performance.now();
+      onLog({
+        id,
+        url,
+        method,
+        status: 0, // 0 = Failed / Aborted
+        duration: Math.round(endTime - startTime),
+        timestamp: new Date().toLocaleTimeString(),
+      });
+
+      throw new TypeError('Failed to fetch (Simulated Offline Mode)');
+    }
+
     try {
       const response = await originalFetch(...args);
       const endTime = performance.now();
-      
+
       onLog({
         id,
         url,
@@ -53,12 +79,12 @@ export const initFetchInterceptor = (onLog: LogCallback) => {
       return response;
     } catch (error) {
       const endTime = performance.now();
-      
+
       onLog({
         id,
         url,
         method,
-        status: 0, // 0 indicates a network error or that the request was blocked
+        status: 0,
         duration: Math.round(endTime - startTime),
         timestamp: new Date().toLocaleTimeString(),
       });

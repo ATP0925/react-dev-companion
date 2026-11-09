@@ -77,7 +77,7 @@ export const DevCompanion: React.FC<DevCompanionProps> = ({ position = 'bottom-r
             flexDirection: 'column',
           }}
         >
-          {/* Header de Navegação */}
+          {/* Nav header */}
           <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid #334155', paddingBottom: '8px', marginBottom: '8px' }}>
             <button
               onClick={() => setActiveTab('network')}
@@ -113,7 +113,7 @@ export const DevCompanion: React.FC<DevCompanionProps> = ({ position = 'bottom-r
 
           {/* Content */}
           {activeTab === 'network' ? (
-            <div style={{ flex: 1, overflowY: 'auto' }}>
+            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
               <NetworkTab logs={logs} />
             </div>
           ) : (
