@@ -1,7 +1,8 @@
 # React Dev Companion
 
 ![CI](https://img.shields.io/github/actions/workflow/status/Kickz1nn/react-dev-companion/ci.yml?branch=main)
-![npm bundle size](https://img.shields.io/bundlephobia/minzip/@kickd0wn/react-dev-companion)
+![npm downloads](https://img.shields.io/npm/dm/%40kickd0wn%2Freact-dev-companion?style=flat-square)
+![npm version](https://img.shields.io/npm/v/%40kickd0wn%2Freact-dev-companion?style=flat-square)
 ![License](https://img.shields.io/github/license/Kickz1nn/react-dev-companion)
 ![GitHub issues](https://img.shields.io/github/issues/Kickz1nn/react-dev-companion)
 
