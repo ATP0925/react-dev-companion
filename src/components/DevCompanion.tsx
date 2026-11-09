@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { initFetchInterceptor, NetworkLog } from '../core/fetchInterceptor';
 import { StorageTab } from './StorageTab';
+import { NetworkTab } from './Networktab';
 
 export const DevCompanion: React.FC = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -82,35 +83,10 @@ export const DevCompanion: React.FC = () => {
             </button>
           </div>
 
-          {/* Conteúdo dos Painéis */}
+          {/* Panels Content */}
           {activeTab === 'network' ? (
             <div style={{ flex: 1, overflowY: 'auto' }}>
-              {logs.length === 0 ? (
-                <p style={{ color: '#94a3b8', fontSize: '13px' }}>No requests captured yet.</p>
-              ) : (
-                logs.map((log: NetworkLog) => (
-                  <div
-                    key={log.id}
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      padding: '6px 0',
-                      borderBottom: '1px solid #1e293b',
-                      fontSize: '12px',
-                    }}
-                  >
-                    <span style={{ fontWeight: 'bold', color: log.method === 'GET' ? '#38bdf8' : '#4ade80' }}>
-                      [{log.method}]
-                    </span>
-                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '220px' }}>
-                      {log.url}
-                    </span>
-                    <span style={{ color: log.status && log.status >= 400 ? '#f87171' : '#facc15' }}>
-                      {log.status || 'PENDING'}
-                    </span>
-                  </div>
-                ))
-              )}
+              <NetworkTab logs={logs} />
             </div>
           ) : (
             <div style={{ flex: 1, overflowY: 'auto' }}>
