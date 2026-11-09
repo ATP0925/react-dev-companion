@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { initFetchInterceptor, NetworkLog } from '../core/fetchInterceptor';
-import { StorageInspector } from './StorageInspector';
+import { StorageTab } from './StorageTab';
 
 export const DevCompanion: React.FC = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -25,7 +25,7 @@ export const DevCompanion: React.FC = () => {
           borderRadius: '8px',
           cursor: 'pointer',
           fontWeight: 'bold',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
         }}
       >
         Dev Companion ({logs.length})
@@ -37,18 +37,18 @@ export const DevCompanion: React.FC = () => {
             position: 'absolute',
             bottom: 50,
             right: 0,
-            width: 380,
-            height: 340,
+            width: 440,
+            height: 380,
             background: '#0f172a',
             color: '#f8fafc',
             borderRadius: '8px',
             padding: '12px',
             boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
             display: 'flex',
-            flexDirection: 'column'
+            flexDirection: 'column',
           }}
         >
-          {/* Main Panel Navigation Header */}
+          {/* Header de Navegação das Abas Principais */}
           <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid #334155', paddingBottom: '8px', marginBottom: '8px' }}>
             <button
               onClick={() => setActiveTab('network')}
@@ -60,7 +60,7 @@ export const DevCompanion: React.FC = () => {
                 borderRadius: '4px',
                 fontSize: '12px',
                 fontWeight: 'bold',
-                cursor: 'pointer'
+                cursor: 'pointer',
               }}
             >
               Network
@@ -75,14 +75,14 @@ export const DevCompanion: React.FC = () => {
                 borderRadius: '4px',
                 fontSize: '12px',
                 fontWeight: 'bold',
-                cursor: 'pointer'
+                cursor: 'pointer',
               }}
             >
               Storage
             </button>
           </div>
 
-          {/* Panel Content */}
+          {/* Conteúdo dos Painéis */}
           {activeTab === 'network' ? (
             <div style={{ flex: 1, overflowY: 'auto' }}>
               {logs.length === 0 ? (
@@ -96,13 +96,13 @@ export const DevCompanion: React.FC = () => {
                       justifyContent: 'space-between',
                       padding: '6px 0',
                       borderBottom: '1px solid #1e293b',
-                      fontSize: '12px'
+                      fontSize: '12px',
                     }}
                   >
                     <span style={{ fontWeight: 'bold', color: log.method === 'GET' ? '#38bdf8' : '#4ade80' }}>
                       [{log.method}]
                     </span>
-                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '180px' }}>
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '220px' }}>
                       {log.url}
                     </span>
                     <span style={{ color: log.status && log.status >= 400 ? '#f87171' : '#facc15' }}>
@@ -113,7 +113,9 @@ export const DevCompanion: React.FC = () => {
               )}
             </div>
           ) : (
-            <StorageInspector />
+            <div style={{ flex: 1, overflowY: 'auto' }}>
+              <StorageTab />
+            </div>
           )}
         </div>
       )}
