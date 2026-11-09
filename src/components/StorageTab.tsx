@@ -79,7 +79,7 @@ export const StorageTab = () => {
           loadItems();
         }
       } catch (err) {
-        console.error('[DevCompanion] Falha ao importar JSON:', err);
+        console.error('[DevCompanion] Failed to import JSON:', err);
       }
     };
     reader.readAsText(file);
@@ -87,7 +87,7 @@ export const StorageTab = () => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', height: '100%' }}>
-      {/* Sub-abas & Ações */}
+      {/* Sub-tabs & Actions */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', gap: '4px', background: theme.cardBg, padding: '3px', borderRadius: '6px', border: `1px solid ${theme.border}` }}>
           {(['localStorage', 'sessionStorage', 'cookie'] as StorageType[]).map((type) => (
@@ -111,8 +111,25 @@ export const StorageTab = () => {
           ))}
         </div>
 
-        {/* Export / Import */}
-        <div style={{ display: 'flex', gap: '6px' }}>
+        {/* Refresh + Export / Import */}
+        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+          <button
+            onClick={loadItems}
+            title="Refresh storage data"
+            style={{
+              padding: '5px 8px',
+              fontSize: '11px',
+              background: theme.cardBg,
+              color: theme.accent,
+              border: `1px solid ${theme.border}`,
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontWeight: 600,
+            }}
+          >
+            ↻ Refresh
+          </button>
+
           <button
             onClick={() => exportStorageJSON(storageType)}
             style={{
@@ -146,11 +163,11 @@ export const StorageTab = () => {
         </div>
       </div>
 
-      {/* Tabela de Itens */}
+      {/* Items Table */}
       <div className="dev-companion-scroll" style={{ flex: 1, overflowY: 'auto', background: theme.cardBg, borderRadius: '6px', border: `1px solid ${theme.border}` }}>
         {items.length === 0 ? (
           <p style={{ color: theme.textSecondary, fontSize: '12px', textAlign: 'center', padding: '24px 0' }}>
-            Nenhum item em {storageType}.
+            No items found in {storageType}.
           </p>
         ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px', color: theme.textPrimary }}>
@@ -192,7 +209,7 @@ export const StorageTab = () => {
                   <td style={{ padding: '8px', textAlign: 'right' }}>
                     {editingKey === item.key ? (
                       <button onClick={() => handleSaveEdit(item.key)} style={{ color: theme.success, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, marginRight: '6px' }}>
-                        Salvar
+                        Save
                       </button>
                     ) : (
                       <button

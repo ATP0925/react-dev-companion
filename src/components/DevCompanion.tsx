@@ -46,10 +46,10 @@ export const DevCompanion: React.FC<DevCompanionProps> = ({ position = 'bottom-r
 
   return (
     <div style={{ position: 'fixed', ...posStyles, zIndex: 99999, fontFamily: 'system-ui, -apple-system, sans-serif' }}>
-      {/* Gatilho Flutuante */}
+      {/* Floating Trigger Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        title="Atalho: Ctrl + Shift + D"
+        title="Shortcut: Ctrl + Shift + D"
         style={{
           background: theme.bg,
           color: theme.textPrimary,
@@ -83,7 +83,7 @@ export const DevCompanion: React.FC<DevCompanionProps> = ({ position = 'bottom-r
         )}
       </button>
 
-      {/* Card do Overlay */}
+      {/* Overlay Panel Card */}
       {isOpen && (
         <div
           className="dev-companion-panel-animate"
@@ -145,9 +145,13 @@ export const DevCompanion: React.FC<DevCompanionProps> = ({ position = 'bottom-r
             </span>
           </div>
 
-          {/* Conteúdo */}
+          {/* Content */}
           <div style={{ flex: 1, overflow: 'hidden' }}>
-            {activeTab === 'network' ? <NetworkTab logs={logs} /> : <StorageTab />}
+            {activeTab === 'network' ? (
+              <NetworkTab logs={logs} onClear={() => setLogs([])} />
+            ) : (
+              <StorageTab />
+            )}
           </div>
         </div>
       )}

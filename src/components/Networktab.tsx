@@ -4,9 +4,10 @@ import { theme, injectDevCompanionStyles } from './styles';
 
 interface NetworkTabProps {
   logs: NetworkLog[];
+  onClear?: () => void;
 }
 
-export const NetworkTab = ({ logs = [] }: NetworkTabProps) => {
+export const NetworkTab = ({ logs = [], onClear }: NetworkTabProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedMethod, setSelectedMethod] = useState<string>('ALL');
   const [isOffline, setIsOffline] = useState(networkConfig.isOffline);
@@ -54,7 +55,7 @@ export const NetworkTab = ({ logs = [] }: NetworkTabProps) => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', height: '100%' }}>
-      {/* Sim Controls (Offline / Throttling) */}
+      {/* Simulation Controls */}
       <div
         style={{
           display: 'flex',
@@ -96,11 +97,11 @@ export const NetworkTab = ({ logs = [] }: NetworkTabProps) => {
         </div>
       </div>
 
-      {/* Filters */}
-      <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+      {/* Filters & Actions */}
+      <div style={{ display: 'flex', gap: '8px', flexShrink: 0, alignItems: 'center' }}>
         <input
           type="text"
-          placeholder="URL Filter..."
+          placeholder="Filter URL..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           style={{
@@ -134,6 +135,25 @@ export const NetworkTab = ({ logs = [] }: NetworkTabProps) => {
           <option value="PUT">PUT</option>
           <option value="DELETE">DELETE</option>
         </select>
+
+        {onClear && (
+          <button
+            onClick={onClear}
+            title="Clear request history"
+            style={{
+              padding: '6px 10px',
+              fontSize: '11px',
+              background: theme.cardBg,
+              color: theme.textSecondary,
+              border: `1px solid ${theme.border}`,
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontWeight: 600,
+            }}
+          >
+            Clear
+          </button>
+        )}
       </div>
 
       {/* Requests List */}
