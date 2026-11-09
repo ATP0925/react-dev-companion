@@ -1,15 +1,21 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { NetworkLog, networkConfig } from '../core/fetchInterceptor';
+import { theme, injectDevCompanionStyles } from './styles';
 
 interface NetworkTabProps {
   logs: NetworkLog[];
 }
 
-export const NetworkTab = ({ logs }: NetworkTabProps) => {
+export const NetworkTab = ({ logs = [] }: NetworkTabProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedMethod, setSelectedMethod] = useState<string>('ALL');
   const [isOffline, setIsOffline] = useState(networkConfig.isOffline);
   const [delay, setDelay] = useState(networkConfig.delayMs);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    injectDevCompanionStyles();
+  }, []);
 
   const handleToggleOffline = () => {
     const nextState = !isOffline;
@@ -23,7 +29,8 @@ export const NetworkTab = ({ logs }: NetworkTabProps) => {
   };
 
   const filteredLogs = logs.filter((log) => {
-    const matchesSearch = log.url.toLowerCase().includes(searchTerm.toLowerCase());
+    if (!log || !log.url) return false;
+    const matchesSearch = log.url.toLowerCase().includes((searchTerm || '').toLowerCase());
     const matchesMethod = selectedMethod === 'ALL' || log.method === selectedMethod;
     return matchesSearch && matchesMethod;
   });
@@ -31,68 +38,94 @@ export const NetworkTab = ({ logs }: NetworkTabProps) => {
   const handleCopyCurl = (log: NetworkLog) => {
     const curl = `curl -X ${log.method} "${log.url}"`;
     navigator.clipboard.writeText(curl);
+    setCopiedId(log.id);
+    setTimeout(() => setCopiedId(null), 1500);
+  };
+
+  const getMethodColor = (method: string) => {
+    switch (method?.toUpperCase()) {
+      case 'GET': return theme.methodGet;
+      case 'POST': return theme.methodPost;
+      case 'PUT': return theme.methodPut;
+      case 'DELETE': return theme.methodDelete;
+      default: return theme.textPrimary;
+    }
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', height: '100%' }}>
-      {/* Controles de Simulação (Offline / Throttling) */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', height: '100%' }}>
+      {/* Sim Controls (Offline / Throttling) */}
       <div
         style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          background: '#1e293b',
-          padding: '6px 8px',
-          borderRadius: '4px',
+          background: theme.cardBg,
+          padding: '8px 10px',
+          borderRadius: '6px',
           fontSize: '11px',
+          border: `1px solid ${theme.borderSubtle}`,
+          flexShrink: 0,
         }}
       >
-        <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', color: isOffline ? '#f87171' : '#cbd5e1' }}>
-          <input type="checkbox" checked={isOffline} onChange={handleToggleOffline} />
-          Simular Offline
+        <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', color: isOffline ? theme.danger : theme.textSecondary, fontWeight: 500 }}>
+          <input type="checkbox" checked={isOffline} onChange={handleToggleOffline} style={{ accentColor: theme.danger }} />
+          Offline Mode
         </label>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span style={{ color: '#cbd5e1' }}>Delay:</span>
+          <span style={{ color: theme.textSecondary }}>Delay:</span>
           <select
             value={delay}
             onChange={(e) => handleDelayChange(Number(e.target.value))}
-            style={{ background: '#0f172a', color: '#fff', border: '1px solid #334155', borderRadius: '3px', padding: '2px 4px', fontSize: '11px' }}
+            style={{
+              background: theme.bg,
+              color: theme.textPrimary,
+              border: `1px solid ${theme.border}`,
+              borderRadius: '4px',
+              padding: '2px 6px',
+              fontSize: '11px',
+              outline: 'none',
+              cursor: 'pointer',
+            }}
           >
-            <option value={0}>Nenhum (0ms)</option>
+            <option value={0}>None (0ms)</option>
             <option value={500}>Fast 3G (500ms)</option>
-            <option value={2000}>Slow 3G (2000ms)</option>
+            <option value={2000}>Slow 3G (2s)</option>
           </select>
         </div>
       </div>
 
-      {/* Barra de Filtros */}
-      <div style={{ display: 'flex', gap: '8px' }}>
+      {/* Filters */}
+      <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
         <input
           type="text"
-          placeholder="Filtrar URL..."
+          placeholder="URL Filter..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           style={{
             flex: 1,
-            background: '#1e293b',
-            color: '#fff',
-            border: '1px solid #334155',
-            borderRadius: '4px',
-            padding: '4px 8px',
+            background: theme.cardBg,
+            color: theme.textPrimary,
+            border: `1px solid ${theme.border}`,
+            borderRadius: '6px',
+            padding: '6px 10px',
             fontSize: '12px',
+            outline: 'none',
           }}
         />
         <select
           value={selectedMethod}
           onChange={(e) => setSelectedMethod(e.target.value)}
           style={{
-            background: '#1e293b',
-            color: '#fff',
-            border: '1px solid #334155',
-            borderRadius: '4px',
-            padding: '4px',
+            background: theme.cardBg,
+            color: theme.textPrimary,
+            border: `1px solid ${theme.border}`,
+            borderRadius: '6px',
+            padding: '6px 8px',
             fontSize: '12px',
+            outline: 'none',
+            cursor: 'pointer',
           }}
         >
           <option value="ALL">ALL</option>
@@ -103,14 +136,16 @@ export const NetworkTab = ({ logs }: NetworkTabProps) => {
         </select>
       </div>
 
-      {/* Lista de Requisições Interceptadas */}
-      <div style={{ flex: 1, overflowY: 'auto' }}>
+      {/* Requests List */}
+      <div className="dev-companion-scroll" style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '4px', paddingRight: '2px' }}>
         {filteredLogs.length === 0 ? (
-          <p style={{ color: '#94a3b8', fontSize: '12px', marginTop: '8px' }}>Nenhuma requisição encontrada.</p>
+          <p style={{ color: theme.textSecondary, fontSize: '12px', textAlign: 'center', marginTop: '24px' }}>
+            No requests captured.
+          </p>
         ) : (
           filteredLogs.map((log) => {
             const isError = !log.status || log.status >= 400;
-            const statusColor = isError ? '#f87171' : '#4ade80';
+            const statusColor = isError ? theme.danger : theme.success;
 
             return (
               <div
@@ -119,14 +154,29 @@ export const NetworkTab = ({ logs }: NetworkTabProps) => {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  padding: '6px 0',
-                  borderBottom: '1px solid #1e293b',
+                  padding: '8px 10px',
+                  background: theme.cardBg,
+                  borderRadius: '6px',
+                  border: `1px solid ${theme.borderSubtle}`,
                   fontSize: '12px',
+                  flexShrink: 0,
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden' }}>
-                  <span style={{ fontWeight: 'bold', color: log.method === 'GET' ? '#38bdf8' : '#4ade80', fontSize: '11px' }}>
-                    [{log.method}]
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
+                  <span
+                    style={{
+                      fontWeight: 700,
+                      color: getMethodColor(log.method),
+                      fontSize: '11px',
+                      background: theme.bg,
+                      padding: '2px 6px',
+                      borderRadius: '4px',
+                      border: `1px solid ${theme.border}`,
+                      minWidth: '45px',
+                      textAlign: 'center',
+                    }}
+                  >
+                    {log.method}
                   </span>
                   <span
                     title={log.url}
@@ -134,8 +184,10 @@ export const NetworkTab = ({ logs }: NetworkTabProps) => {
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap',
-                      maxWidth: '160px',
-                      color: '#e2e8f0',
+                      maxWidth: '170px',
+                      color: theme.textPrimary,
+                      fontFamily: 'monospace',
+                      fontSize: '11px',
                     }}
                   >
                     {log.url}
@@ -144,25 +196,38 @@ export const NetworkTab = ({ logs }: NetworkTabProps) => {
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
                   {log.duration !== undefined && (
-                    <span style={{ color: '#94a3b8', fontSize: '10px' }}>{log.duration}ms</span>
+                    <span style={{ color: theme.textSecondary, fontSize: '10px', fontFamily: 'monospace' }}>
+                      {log.duration}ms
+                    </span>
                   )}
-                  <span style={{ color: statusColor, fontWeight: 'bold' }}>
+                  <span
+                    style={{
+                      color: statusColor,
+                      fontWeight: 700,
+                      fontSize: '11px',
+                      background: `${statusColor}15`,
+                      padding: '2px 6px',
+                      borderRadius: '4px',
+                    }}
+                  >
                     {log.status || 'ERR'}
                   </span>
                   <button
                     onClick={() => handleCopyCurl(log)}
-                    title="Copiar cURL"
+                    title="Copy cURL"
                     style={{
-                      background: '#334155',
-                      color: '#f8fafc',
+                      background: copiedId === log.id ? theme.success : theme.hoverBg,
+                      color: copiedId === log.id ? '#000' : theme.textPrimary,
                       border: 'none',
-                      borderRadius: '3px',
-                      padding: '2px 6px',
+                      borderRadius: '4px',
+                      padding: '3px 8px',
                       fontSize: '10px',
+                      fontWeight: 600,
                       cursor: 'pointer',
+                      transition: 'all 0.15s ease',
                     }}
                   >
-                    cURL
+                    {copiedId === log.id ? 'Copied!' : 'cURL'}
                   </button>
                 </div>
               </div>

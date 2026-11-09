@@ -1,12 +1,17 @@
 import { useState, useEffect, ChangeEvent } from 'react';
 import { StorageItem, StorageType } from '../types/storage';
 import { getCookies, setCookie, deleteCookie, exportStorageJSON } from '../utils/storage';
+import { theme, injectDevCompanionStyles } from './styles';
 
 export const StorageTab = () => {
   const [storageType, setStorageType] = useState<StorageType>('localStorage');
   const [items, setItems] = useState<StorageItem[]>([]);
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<string>('');
+
+  useEffect(() => {
+    injectDevCompanionStyles();
+  }, []);
 
   const loadItems = () => {
     if (typeof window === 'undefined') return;
@@ -81,75 +86,112 @@ export const StorageTab = () => {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', padding: '1rem' }}>
-      {/* Sub-abas de seleção de Storage */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', height: '100%' }}>
+      {/* Sub-abas & Ações */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', gap: '4px', background: theme.cardBg, padding: '3px', borderRadius: '6px', border: `1px solid ${theme.border}` }}>
           {(['localStorage', 'sessionStorage', 'cookie'] as StorageType[]).map((type) => (
             <button
               key={type}
               onClick={() => setStorageType(type)}
               style={{
-                padding: '4px 10px',
+                padding: '4px 8px',
                 borderRadius: '4px',
-                border: '1px solid #444',
-                background: storageType === type ? '#007acc' : '#222',
-                color: '#fff',
+                border: 'none',
+                background: storageType === type ? theme.accent : 'transparent',
+                color: storageType === type ? '#fff' : theme.textSecondary,
                 cursor: 'pointer',
-                fontSize: '12px',
+                fontSize: '11px',
+                fontWeight: 600,
+                transition: 'all 0.15s ease',
               }}
             >
-              {type}
+              {type === 'localStorage' ? 'Local' : type === 'sessionStorage' ? 'Session' : 'Cookies'}
             </button>
           ))}
         </div>
 
-        {/* Ações de Import / Export */}
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+        {/* Export / Import */}
+        <div style={{ display: 'flex', gap: '6px' }}>
           <button
             onClick={() => exportStorageJSON(storageType)}
-            style={{ padding: '4px 8px', fontSize: '11px', background: '#333', color: '#fff', border: '1px solid #555', borderRadius: '4px', cursor: 'pointer' }}
+            style={{
+              padding: '5px 9px',
+              fontSize: '11px',
+              background: theme.cardBg,
+              color: theme.textPrimary,
+              border: `1px solid ${theme.border}`,
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontWeight: 500,
+            }}
           >
-            Export JSON
+            Export
           </button>
-          <label style={{ padding: '4px 8px', fontSize: '11px', background: '#333', color: '#fff', border: '1px solid #555', borderRadius: '4px', cursor: 'pointer' }}>
-            Import JSON
+          <label
+            style={{
+              padding: '5px 9px',
+              fontSize: '11px',
+              background: theme.cardBg,
+              color: theme.textPrimary,
+              border: `1px solid ${theme.border}`,
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontWeight: 500,
+            }}
+          >
+            Import
             <input type="file" accept=".json" onChange={handleImportJSON} style={{ display: 'none' }} />
           </label>
         </div>
       </div>
 
       {/* Tabela de Itens */}
-      <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+      <div className="dev-companion-scroll" style={{ flex: 1, overflowY: 'auto', background: theme.cardBg, borderRadius: '6px', border: `1px solid ${theme.border}` }}>
         {items.length === 0 ? (
-          <p style={{ color: '#888', fontSize: '13px' }}>Nenhum item encontrado no {storageType}.</p>
+          <p style={{ color: theme.textSecondary, fontSize: '12px', textAlign: 'center', padding: '24px 0' }}>
+            Nenhum item em {storageType}.
+          </p>
         ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', color: '#ccc' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px', color: theme.textPrimary }}>
             <thead>
-              <tr style={{ borderBottom: '1px solid #444', textAlign: 'left' }}>
-                <th style={{ padding: '6px' }}>Chave</th>
-                <th style={{ padding: '6px' }}>Valor</th>
-                <th style={{ padding: '6px', width: '90px' }}>Ações</th>
+              <tr style={{ borderBottom: `1px solid ${theme.border}`, textAlign: 'left', background: theme.bg, color: theme.textSecondary }}>
+                <th style={{ padding: '8px', width: '35%' }}>Key</th>
+                <th style={{ padding: '8px' }}>Value</th>
+                <th style={{ padding: '8px', width: '80px', textAlign: 'right' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {items.map((item) => (
-                <tr key={item.key} style={{ borderBottom: '1px solid #333' }}>
-                  <td style={{ padding: '6px', fontWeight: 'bold', color: '#9cdcfe' }}>{item.key}</td>
-                  <td style={{ padding: '6px' }}>
+                <tr key={item.key} style={{ borderBottom: `1px solid ${theme.borderSubtle}` }}>
+                  <td style={{ padding: '8px', fontWeight: 600, color: theme.methodGet, fontFamily: 'monospace', wordBreak: 'break-all' }}>
+                    {item.key}
+                  </td>
+                  <td style={{ padding: '8px' }}>
                     {editingKey === item.key ? (
                       <input
                         value={editValue}
                         onChange={(e) => setEditValue(e.target.value)}
-                        style={{ width: '100%', background: '#1e1e1e', color: '#fff', border: '1px solid #007acc', padding: '2px 4px' }}
+                        style={{
+                          width: '100%',
+                          background: theme.bg,
+                          color: theme.textPrimary,
+                          border: `1px solid ${theme.accent}`,
+                          borderRadius: '4px',
+                          padding: '3px 6px',
+                          fontSize: '11px',
+                          outline: 'none',
+                        }}
                       />
                     ) : (
-                      <span style={{ wordBreak: 'break-all' }}>{item.value}</span>
+                      <span style={{ wordBreak: 'break-all', fontFamily: 'monospace', color: theme.textSecondary }}>
+                        {item.value}
+                      </span>
                     )}
                   </td>
-                  <td style={{ padding: '6px' }}>
+                  <td style={{ padding: '8px', textAlign: 'right' }}>
                     {editingKey === item.key ? (
-                      <button onClick={() => handleSaveEdit(item.key)} style={{ color: '#4ec9b0', background: 'none', border: 'none', cursor: 'pointer' }}>
+                      <button onClick={() => handleSaveEdit(item.key)} style={{ color: theme.success, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, marginRight: '6px' }}>
                         Salvar
                       </button>
                     ) : (
@@ -158,12 +200,12 @@ export const StorageTab = () => {
                           setEditingKey(item.key);
                           setEditValue(item.value);
                         }}
-                        style={{ color: '#dcdcaa', background: 'none', border: 'none', cursor: 'pointer', marginRight: '6px' }}
+                        style={{ color: theme.warning, background: 'none', border: 'none', cursor: 'pointer', marginRight: '6px' }}
                       >
-                        Editar
+                        Edit
                       </button>
                     )}
-                    <button onClick={() => handleDelete(item.key)} style={{ color: '#f44747', background: 'none', border: 'none', cursor: 'pointer' }}>
+                    <button onClick={() => handleDelete(item.key)} style={{ color: theme.danger, background: 'none', border: 'none', cursor: 'pointer' }}>
                       Del
                     </button>
                   </td>

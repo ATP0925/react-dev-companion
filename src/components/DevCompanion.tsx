@@ -3,6 +3,7 @@ import { initFetchInterceptor, NetworkLog } from '../core/fetchInterceptor';
 import { StorageTab } from './StorageTab';
 import { NetworkTab } from './NetworkTab';
 import { useKeyboardShortcut } from '../hooks/useKeyboardShortcut';
+import { theme, injectDevCompanionStyles } from './styles';
 
 export interface DevCompanionProps {
   position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
@@ -13,7 +14,10 @@ export const DevCompanion: React.FC<DevCompanionProps> = ({ position = 'bottom-r
   const [activeTab, setActiveTab] = useState<'network' | 'storage'>('network');
   const [logs, setLogs] = useState<NetworkLog[]>([]);
 
-  // Shortcut: Ctrl/CMD + Shift + D to toggle the Dev Companion
+  useEffect(() => {
+    injectDevCompanionStyles();
+  }, []);
+
   useKeyboardShortcut({ key: 'd', ctrlOrCmd: true, shift: true }, () => {
     setIsOpen((prev) => !prev);
   });
@@ -24,7 +28,6 @@ export const DevCompanion: React.FC<DevCompanionProps> = ({ position = 'bottom-r
     });
   }, []);
 
-  // Define position styles based on the provided position prop
   const getPositionStyles = () => {
     switch (position) {
       case 'bottom-left':
@@ -42,85 +45,110 @@ export const DevCompanion: React.FC<DevCompanionProps> = ({ position = 'bottom-r
   const posStyles = getPositionStyles();
 
   return (
-    <div style={{ position: 'fixed', ...posStyles, zIndex: 99999, fontFamily: 'sans-serif' }}>
+    <div style={{ position: 'fixed', ...posStyles, zIndex: 99999, fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+      {/* Gatilho Flutuante */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         title="Atalho: Ctrl + Shift + D"
         style={{
-          background: '#1e293b',
-          color: '#fff',
-          border: 'none',
-          padding: '10px 14px',
-          borderRadius: '8px',
+          background: theme.bg,
+          color: theme.textPrimary,
+          border: `1px solid ${theme.border}`,
+          padding: '8px 14px',
+          borderRadius: '20px',
           cursor: 'pointer',
-          fontWeight: 'bold',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          fontWeight: 600,
+          fontSize: '12px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.35)',
+          transition: 'transform 0.15s ease',
         }}
       >
-        Dev Companion ({logs.length})
+        <span style={{ color: theme.accent }}>⚡</span> DevCompanion
+        {logs.length > 0 && (
+          <span
+            style={{
+              background: theme.accent,
+              color: '#fff',
+              fontSize: '10px',
+              padding: '2px 6px',
+              borderRadius: '10px',
+              fontWeight: 700,
+            }}
+          >
+            {logs.length}
+          </span>
+        )}
       </button>
 
+      {/* Card do Overlay */}
       {isOpen && (
         <div
+          className="dev-companion-panel-animate"
           style={{
             position: 'absolute',
             ...(posStyles.bottom !== undefined ? { bottom: 50 } : { top: 50 }),
             ...(posStyles.right !== undefined ? { right: 0 } : { left: 0 }),
             width: 440,
-            height: 380,
-            background: '#0f172a',
-            color: '#f8fafc',
-            borderRadius: '8px',
+            height: 400,
+            background: theme.bg,
+            color: theme.textPrimary,
+            borderRadius: '10px',
             padding: '12px',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+            border: `1px solid ${theme.border}`,
+            boxShadow: '0 12px 32px rgba(0,0,0,0.5)',
             display: 'flex',
             flexDirection: 'column',
           }}
         >
-          {/* Nav header */}
-          <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid #334155', paddingBottom: '8px', marginBottom: '8px' }}>
-            <button
-              onClick={() => setActiveTab('network')}
-              style={{
-                background: activeTab === 'network' ? '#0284c7' : '#1e293b',
-                color: '#fff',
-                border: 'none',
-                padding: '6px 12px',
-                borderRadius: '4px',
-                fontSize: '12px',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-              }}
-            >
-              Network
-            </button>
-            <button
-              onClick={() => setActiveTab('storage')}
-              style={{
-                background: activeTab === 'storage' ? '#0284c7' : '#1e293b',
-                color: '#fff',
-                border: 'none',
-                padding: '6px 12px',
-                borderRadius: '4px',
-                fontSize: '12px',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-              }}
-            >
-              Storage
-            </button>
+          {/* Header */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${theme.border}`, paddingBottom: '8px', marginBottom: '10px' }}>
+            <div style={{ display: 'flex', gap: '6px' }}>
+              <button
+                onClick={() => setActiveTab('network')}
+                style={{
+                  background: activeTab === 'network' ? theme.accent : 'transparent',
+                  color: activeTab === 'network' ? '#fff' : theme.textSecondary,
+                  border: 'none',
+                  padding: '5px 12px',
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                Network
+              </button>
+              <button
+                onClick={() => setActiveTab('storage')}
+                style={{
+                  background: activeTab === 'storage' ? theme.accent : 'transparent',
+                  color: activeTab === 'storage' ? '#fff' : theme.textSecondary,
+                  border: 'none',
+                  padding: '5px 12px',
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                Storage
+              </button>
+            </div>
+
+            <span style={{ fontSize: '10px', color: theme.textSecondary, fontFamily: 'monospace' }}>
+              Ctrl+Shift+D
+            </span>
           </div>
 
-          {/* Content */}
-          {activeTab === 'network' ? (
-            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
-              <NetworkTab logs={logs} />
-            </div>
-          ) : (
-            <div style={{ flex: 1, overflowY: 'auto' }}>
-              <StorageTab />
-            </div>
-          )}
+          {/* Conteúdo */}
+          <div style={{ flex: 1, overflow: 'hidden' }}>
+            {activeTab === 'network' ? <NetworkTab logs={logs} /> : <StorageTab />}
+          </div>
         </div>
       )}
     </div>
